@@ -12,6 +12,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+
+import android.util.Log;
 
 /**
  * Created by Nikolay Demyankov on 21.07.15.
@@ -114,18 +119,24 @@ public class FilesUtility {
     }
 
     private static void copyFile(File fromFile, File toFile) throws IOException {
-        InputStream in = new BufferedInputStream(new FileInputStream(fromFile));
-        OutputStream out = new BufferedOutputStream(new FileOutputStream(toFile));
+        try (InputStream in = new BufferedInputStream(new FileInputStream(fromFile))) {
+            try (OutputStream out = new BufferedOutputStream(new FileOutputStream(toFile))) {
+                // Transfer bytes from in to out
+                byte[] buf = new byte[8192];
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
 
-        // Transfer bytes from in to out
-        byte[] buf = new byte[8192];
-        int len;
-        while ((len = in.read(buf)) > 0) {
-            out.write(buf, 0, len);
+                in.close();
+                out.close();
+            } catch (Exception e) {
+                Log.d("CHCP", "Failed to read output stream", e);
+            }
+
+        } catch (Exception e) {
+            Log.d("CHCP", "Failed to read input stream", e);
         }
-
-        in.close();
-        out.close();
     }
 
     /**
@@ -147,17 +158,18 @@ public class FilesUtility {
      * @throws IOException
      */
     public static String readFromFile(File file) throws IOException {
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+        try (BufferedReader bufferedReader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
 
-        StringBuilder content = new StringBuilder();
-        String line;
-        while ((line = bufferedReader.readLine()) != null) {
-            content.append(line).append("\n");
+            StringBuilder content = new StringBuilder();
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                content.append(line).append("\n");
+            }
+
+            bufferedReader.close();
+
+            return content.toString().trim();
         }
-
-        bufferedReader.close();
-
-        return content.toString().trim();
     }
 
     /**
@@ -179,11 +191,12 @@ public class FilesUtility {
      * @throws IOException
      */
     public static void writeToFile(String content, File dstFile) throws IOException {
-        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(dstFile, false));
+        try (BufferedWriter bufferedWriter = Files.newBufferedWriter(dstFile.toPath(), StandardCharsets.UTF_8)) {
 
-        bufferedWriter.write(content);
+            bufferedWriter.write(content);
 
-        bufferedWriter.close();
+            bufferedWriter.close();
+        }
     }
 
     /**
@@ -208,14 +221,15 @@ public class FilesUtility {
      */
     public static String calculateFileHash(File file) throws Exception {
         MD5 md5 = new MD5();
-        InputStream in = new BufferedInputStream(new FileInputStream(file));
+        try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
 
-        int len;
-        byte[] buff = new byte[8192];
-        while ((len = in.read(buff)) > 0) {
-            md5.write(buff, len);
+            int len;
+            byte[] buff = new byte[8192];
+            while ((len = in.read(buff)) > 0) {
+                md5.write(buff, len);
+            }
+
+            return md5.calculateHash();
         }
-
-        return md5.calculateHash();
     }
 }

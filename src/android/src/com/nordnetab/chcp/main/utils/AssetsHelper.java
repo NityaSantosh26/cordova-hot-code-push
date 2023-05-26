@@ -2,6 +2,7 @@ package com.nordnetab.chcp.main.utils;
 
 import android.content.Context;
 
+import android.util.Log;
 import com.nordnetab.chcp.main.events.AssetsInstallationErrorEvent;
 import com.nordnetab.chcp.main.events.AssetsInstalledEvent;
 import com.nordnetab.chcp.main.events.BeforeAssetsInstalledEvent;
@@ -56,7 +57,6 @@ public class AssetsHelper {
                     execute(applicationContext, fromDirectory, toDirectory);
                     EventBus.getDefault().post(new AssetsInstalledEvent());
                 } catch (IOException e) {
-                    e.printStackTrace();
                     EventBus.getDefault().post(new AssetsInstallationErrorEvent());
                 } finally {
                     isWorking = false;
@@ -75,19 +75,24 @@ public class AssetsHelper {
     }
 
     private static void copyAssets(final String appJarPath, final String assetsDir, final String toDirectory) throws IOException {
-        final JarFile jarFile = new JarFile(appJarPath);
-        final int prefixLength = assetsDir.length();
-        final Enumeration<JarEntry> filesEnumeration = jarFile.entries();
+        try (final JarFile jarFile = new JarFile(appJarPath)) {
+          final int prefixLength = assetsDir.length();
+          final Enumeration<JarEntry> filesEnumeration = jarFile.entries();
 
-        while (filesEnumeration.hasMoreElements()) {
-            final JarEntry fileJarEntry = filesEnumeration.nextElement();
-            final String name = fileJarEntry.getName();
-            if (!fileJarEntry.isDirectory() && name.startsWith(assetsDir)) {
-                final String destinationFileAbsolutePath = Paths.get(toDirectory, name.substring(prefixLength));
+          while (filesEnumeration.hasMoreElements()) {
+              final JarEntry fileJarEntry = filesEnumeration.nextElement();
+              final String name = fileJarEntry.getName();
+              if (!fileJarEntry.isDirectory() && name.startsWith(assetsDir)) {
+                  final String destinationFileAbsolutePath = Paths.get(toDirectory, name.substring(prefixLength));
 
-                copyFile(jarFile.getInputStream(fileJarEntry), destinationFileAbsolutePath);
-            }
+                  copyFile(jarFile.getInputStream(fileJarEntry), destinationFileAbsolutePath);
+              }
+          }
+
+        } catch (Exception e) {
+            Log.d("CHCP", "Failed to copy assets", e);
         }
+
     }
 
     /**
@@ -95,16 +100,21 @@ public class AssetsHelper {
      */
     private static void copyFile(final InputStream in, final String destinationFilePath) throws IOException {
         FilesUtility.ensureDirectoryExists(new File(destinationFilePath).getParent());
-        OutputStream out = new FileOutputStream(destinationFilePath);
-        // Transfer bytes from in to out
-        byte[] buf = new byte[8192];
-        int len;
-        while ((len = in.read(buf)) > 0) {
-            out.write(buf, 0, len);
-        }
 
-        in.close();
-        out.close();
+        try (OutputStream out = new FileOutputStream(destinationFilePath)) {
+          // Transfer bytes from in to out
+          byte[] buf = new byte[8192];
+          int len;
+          while ((len = in.read(buf)) > 0) {
+              out.write(buf, 0, len);
+          }
+
+          in.close();
+          out.close();
+
+        } catch (Exception e) {
+            Log.d("CHCP", "Failed to copy file", e);
+        }
     }
 
 }

@@ -86,20 +86,20 @@ function loadProjectFile() {
 }
 
 function loadProjectFile_cordova_pre_5() {
-  var platformIos = context.requireCordovaModule('cordova-lib/src/plugman/platforms')['ios'];
+  var platformIos = require('cordova-lib/src/plugman/platforms')['ios'];
 
   return platformIos.parseProjectFile(iosPlatformPath);
 }
 
 function loadProjectFile_cordova_5_and_6() {
-  var platformIos = context.requireCordovaModule('cordova-lib/src/plugman/platforms/ios');
-  
+  var platformIos = require('cordova-lib/src/plugman/platforms/ios');
+
   return platformIos.parseProjectFile(iosPlatformPath);
 }
 
 function loadProjectFile_cordova_7_and_above() {
   var pbxPath = path.join(iosPlatformPath, projectName + '.xcodeproj', 'project.pbxproj');
-  var xcodeproj = context.requireCordovaModule('xcode').project(pbxPath);
+  var xcodeproj = require('xcode').project(pbxPath);
   xcodeproj.parseSync();
 
   var saveProj = function() {

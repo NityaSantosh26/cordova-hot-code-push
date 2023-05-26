@@ -1,7 +1,7 @@
 package com.nordnetab.chcp.main.config;
 
 import android.content.Context;
-
+import android.util.Log;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -66,7 +66,7 @@ public class PluginInternalPreferences {
                 );
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.d("CHCP", "Failed to find JSON value", e);
 
             config = null;
         }

@@ -2,13 +2,13 @@ package com.nordnetab.chcp.main.network;
 
 import com.nordnetab.chcp.main.utils.URLConnectionHelper;
 import com.nordnetab.chcp.main.utils.URLUtility;
-
+import android.util.Log;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Map;
-
+import java.nio.charset.*;
 /**
  * Created by Nikolay Demyankov on 22.07.15.
  * <p/>
@@ -55,7 +55,7 @@ abstract class JsonDownloader<T> {
 
             result = new DownloadResult<T>(value);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.d("CHCP", "Failed to download", e);
 
             result = new DownloadResult<T>(e);
         }
@@ -67,7 +67,7 @@ abstract class JsonDownloader<T> {
         final StringBuilder jsonContent = new StringBuilder();
 
         final URLConnection urlConnection = URLConnectionHelper.createConnectionToURL(downloadUrl, requestHeaders);
-        final InputStreamReader streamReader = new InputStreamReader(urlConnection.getInputStream());
+        final InputStreamReader streamReader = new InputStreamReader(urlConnection.getInputStream(), StandardCharsets.UTF_8);
         final BufferedReader bufferedReader = new BufferedReader(streamReader);
 
         final char data[] = new char[1024];

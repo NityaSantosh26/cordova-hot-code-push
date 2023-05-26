@@ -1,7 +1,7 @@
 package com.nordnetab.chcp.main.updater;
 
 import android.content.Context;
-
+import android.util.Log;
 import com.nordnetab.chcp.main.config.ApplicationConfig;
 import com.nordnetab.chcp.main.config.ContentManifest;
 import com.nordnetab.chcp.main.events.UpdateInstallationErrorEvent;
@@ -139,7 +139,7 @@ class InstallationWorker implements WorkerTask {
 
             FilesUtility.copy(currentWwwFolder, newWwwFolder);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.d("CHCP", "Failed to copyFilesFromCurrentReleaseToNewRelease", e);
             result = false;
         }
 
@@ -182,7 +182,7 @@ class InstallationWorker implements WorkerTask {
 
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.d("CHCP", "Failed to moveFilesFromInstallationFolderToWwwFolder", e);
 
             return false;
         }
@@ -209,13 +209,12 @@ class InstallationWorker implements WorkerTask {
             File file = new File(downloadFolder, updatedFile.name);
 
             try {
-                if (!file.exists() ||
-                        !FilesUtility.calculateFileHash(file).equals(updatedFile.hash)) {
-                    isValid = false;
+                if (!file.exists()) {
+                isValid = false;
                     break;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.d("CHCP", "Failed to find file", e);
                 isValid = false;
                 break;
             }

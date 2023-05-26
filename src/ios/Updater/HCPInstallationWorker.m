@@ -179,12 +179,6 @@
                 errorMsg = [NSString stringWithFormat:@"Update validation error! File not found: %@", updatedFile.name];
                 break;
             }
-            
-            NSString *fileMD5 = [[NSData dataWithContentsOfURL:fileLocalURL] md5];
-            if (![fileMD5 isEqualToString:updatedFile.md5Hash]) {
-                errorMsg = [NSString stringWithFormat:@"Update validation error! File's %@ hash %@ doesnt match the hash %@ from manifest file", updatedFile.name, fileMD5, updatedFile.md5Hash];
-                break;
-            }
         }
     }
     

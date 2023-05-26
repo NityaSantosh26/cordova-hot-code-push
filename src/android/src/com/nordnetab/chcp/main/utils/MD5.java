@@ -1,5 +1,6 @@
 package com.nordnetab.chcp.main.utils;
 
+import android.util.Log;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -22,7 +23,7 @@ public class MD5 {
         try {
             digest = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            Log.d("CHCP", "Failed to find MD5", e);
         }
     }
 

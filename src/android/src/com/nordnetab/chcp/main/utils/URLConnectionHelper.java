@@ -1,5 +1,7 @@
 package com.nordnetab.chcp.main.utils;
 
+import android.webkit.CookieManager;
+
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -35,7 +37,10 @@ public class URLConnectionHelper {
         final URLConnection urlConnection = connectionURL.openConnection();
         urlConnection.setConnectTimeout(CONNECTION_TIMEOUT);
         urlConnection.setReadTimeout(READ_TIMEOUT);
-
+        //Add cookie to request
+        CookieManager cookieManager=CookieManager.getInstance();
+        String cookie=cookieManager.getCookie(url);
+        urlConnection.setRequestProperty("Cookie",cookie);
         if (requestHeaders != null) {
             for (final Map.Entry<String, String> entry : requestHeaders.entrySet()) {
                 urlConnection.setRequestProperty(entry.getKey(), entry.getValue());

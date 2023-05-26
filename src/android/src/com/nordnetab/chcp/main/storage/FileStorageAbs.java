@@ -3,7 +3,7 @@ package com.nordnetab.chcp.main.storage;
 import android.text.TextUtils;
 
 import com.nordnetab.chcp.main.utils.FilesUtility;
-
+import android.util.Log;
 import java.io.IOException;
 
 /**
@@ -42,7 +42,7 @@ abstract class FileStorageAbs<T> implements IObjectFileStorage<T> {
         try {
             FilesUtility.writeToFile(object.toString(), pathToStorableFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.d("CHCP", "Failed to write to file", e);
             return false;
         }
 

@@ -35,7 +35,7 @@ public class ManifestFile {
             return false;
         }
 
-        if (!(o instanceof ManifestFile)) {
+        if (!(o.getClass() == this.getClass())) {
             return super.equals(o);
         }
 

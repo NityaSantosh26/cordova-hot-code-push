@@ -76,7 +76,7 @@ public class ApplicationConfig {
         final StringBuilder returnString = new StringBuilder();
         final String configFilePath = "www/" + configFileName;
         BufferedReader reader = null;
-        try {
+        try (InputStreamReader isr = new InputStreamReader(assetManager.open(configFilePath))){
             InputStreamReader isr = new InputStreamReader(assetManager.open(configFilePath));
             reader = new BufferedReader(isr);
             String line;

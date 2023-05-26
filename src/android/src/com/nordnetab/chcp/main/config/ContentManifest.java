@@ -1,7 +1,7 @@
 package com.nordnetab.chcp.main.config;
 
 import android.text.TextUtils;
-
+import android.util.Log;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -47,7 +47,7 @@ public class ContentManifest {
                 manifest.files.add(new ManifestFile(fileName, fileHash));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.d("CHCP", "Failed to parse JSON", e);
         }
 
         manifest.jsonString = json;

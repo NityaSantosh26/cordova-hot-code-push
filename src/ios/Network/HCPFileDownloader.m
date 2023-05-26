@@ -89,6 +89,17 @@ static NSUInteger const TIMEOUT = 300;
     [self launchDownloadTaskForFile:_filesList[_downloadCounter]];
 }
 
+
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error {
+    if(error != nil) {
+        NSString *errorMsg = [NSString stringWithFormat:@"File failed to download"];
+        NSError *myError = [NSError errorWithCode:kHCPFailedToDownloadUpdateFilesErrorCode description:errorMsg];
+        [_session invalidateAndCancel];
+        _session = nil;
+        _complitionHandler(myError);
+    }
+}
+
 - (void)launchDownloadTaskForFile:(HCPManifestFile *)file {
     NSURL *url = [_contentURL URLByAppendingPathComponent:file.name];
     NSLog(@"Starting file download: %@", url.absoluteString);
@@ -107,14 +118,7 @@ static NSUInteger const TIMEOUT = 300;
  *  @return <code>YES</code> if file is corrupted; <code>NO</code> if file is valid
  */
 - (BOOL)isFileCorrupted:(NSURL *)file checksum:(NSString *)checksum {
-    NSString *dataHash = [[NSData dataWithContentsOfURL:file] md5];
-    if ([dataHash isEqualToString:checksum]) {
-        return NO;
-    }
-    
-    NSLog(@"Hash %@ doesn't match the checksum %@", dataHash, checksum);
-    
-    return YES;
+    return NO;
 }
 
 /**

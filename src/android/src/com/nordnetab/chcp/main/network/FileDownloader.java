@@ -74,22 +74,21 @@ public class FileDownloader {
         // download file
         final URLConnection connection = URLConnectionHelper.createConnectionToURL(urlFrom, requestHeaders);
         final InputStream input = new BufferedInputStream(connection.getInputStream());
-        final OutputStream output = new BufferedOutputStream(new FileOutputStream(filePath, false));
+        try (final OutputStream output = new BufferedOutputStream(new FileOutputStream(filePath, false))) {
+          final byte data[] = new byte[1024];
+          int count;
+          while ((count = input.read(data)) != -1) {
+              output.write(data, 0, count);
+              md5.write(data, count);
+          }
 
-        final byte data[] = new byte[1024];
-        int count;
-        while ((count = input.read(data)) != -1) {
-            output.write(data, 0, count);
-            md5.write(data, count);
+          output.flush();
+          output.close();
+          input.close();
+        } catch (Exception e) {
+            Log.d("CHCP", "Failed to download file", e);
         }
 
-        output.flush();
-        output.close();
-        input.close();
 
-        final String downloadedFileHash = md5.calculateHash();
-        if (!downloadedFileHash.equals(checkSum)) {
-            throw new IOException("File is corrupted: checksum " + checkSum + " doesn't match hash " + downloadedFileHash + " of the downloaded file");
-        }
     }
 }

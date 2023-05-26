@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.nordnetab.chcp.main.model.UpdateTime;
+import android.util.Log;
 
 /**
  * Created by Nikolay Demyankov on 22.07.15.
@@ -54,7 +55,7 @@ public class ContentConfig {
                 config.setUpdateTime(UpdateTime.ON_START);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.d("CHCP", "Failed to serialize JSON", e);
         }
 
         return config;
