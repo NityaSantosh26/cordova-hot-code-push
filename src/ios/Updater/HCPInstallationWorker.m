@@ -64,7 +64,40 @@
     
     [self cleanUpOnSucess];
     [self saveNewConfigsToWwwFolder];
+    [self replaceIndexStartpage];
     [self dispatchSuccessEvent];
+}
+
+- (void) replaceIndexStartpage {
+    NSURL *pathInWwwFolder = [_newReleaseFS.wwwFolder URLByAppendingPathComponent:@"index.html"];
+    NSError *error = nil;
+    
+    NSString *htmlContent = [NSString stringWithContentsOfURL:pathInWwwFolder encoding:NSUTF8StringEncoding error:&error];
+    
+    // Check if the content already has the modified href
+    if ([htmlContent containsString:@"<base href=\"#\""]) {
+        NSLog(@"No modification needed, <base href=\"#\" /> already exists.");
+        return;
+    }
+    @try{
+        
+        NSString *modifiedHtmlContent = [htmlContent stringByReplacingOccurrencesOfString:@"<base href=\"./\"" withString:@"<base href=\"#\""];
+        
+        [modifiedHtmlContent writeToURL:pathInWwwFolder atomically:YES encoding:NSUTF8StringEncoding error:&error];
+        
+        if (error) {
+            NSString *errorDescription = [NSString stringWithFormat:@"Failed to patch index page: %@", error.localizedDescription];
+            NSDictionary *userInfo = @{NSUnderlyingErrorKey: error};
+            @throw [NSException exceptionWithName:@"WriteErrorException" reason:errorDescription userInfo:userInfo];
+        }
+    }
+    @catch(NSException *exception) {
+        NSLog(@"An error occurred while attempting to patch index page: %@, %@", exception.name, exception.reason);
+        // Create a new exception with more detail and re-throw it
+        NSException *detailedException = [NSException exceptionWithName:@"DetailedWriteErrorException" reason:@"An error occurred while attempting to patch index page" userInfo:@{@"originalException": exception}];
+        
+        @throw detailedException;
+    }
 }
 
 #pragma mark Private API

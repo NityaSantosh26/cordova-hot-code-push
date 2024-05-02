@@ -70,6 +70,50 @@ static NSString *const DEFAULT_STARTING_PAGE = @"index.html";
         _pluginInternalPrefs.readyForInstallationReleaseVersionName.length > 0) {
         [self _installUpdate:nil];
     }
+
+    [self replaceIndexPage];
+}
+
+- (void) replaceIndexPage {
+    NSString *indexPageStripped = [self indexPageFromConfigXml];
+    
+    NSRange r = [indexPageStripped rangeOfCharacterFromSet:[NSCharacterSet characterSetWithCharactersInString:@"?#"] options:0];
+    if (r.location != NSNotFound) {
+        indexPageStripped = [indexPageStripped substringWithRange:NSMakeRange(0, r.location)];
+    }
+    
+    NSURL *indexPageExternalURL = [self appendWwwFolderPathToPath:indexPageStripped];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:indexPageExternalURL.path]) {
+        return;
+    }
+    NSError *error = nil;
+    
+    NSString *htmlContent = [NSString stringWithContentsOfURL:indexPageExternalURL encoding:NSUTF8StringEncoding error:&error];
+    
+    // Check if the content already has the modified href
+    if ([htmlContent containsString:@"<base href=\"#\""]) {
+        NSLog(@"No modification needed, <base href=\"#\" /> already exists.");
+        return;
+    }
+
+    @try {
+        NSString *modifiedHtmlContent = [htmlContent stringByReplacingOccurrencesOfString:@"<base href=\"./\"" withString:@"<base href=\"#\""];
+        
+        [modifiedHtmlContent writeToURL:indexPageExternalURL atomically:YES encoding:NSUTF8StringEncoding error:&error];
+        if(error) {
+            NSString *errorDescription = [NSString stringWithFormat:@"Failed to patch index page: %@", error.localizedDescription];
+            NSDictionary *userInfo = @{NSUnderlyingErrorKey: error};
+            @throw [NSException exceptionWithName:@"WriteErrorException" reason:errorDescription userInfo:userInfo];
+        }
+    }
+    @catch(NSException *exception) {
+        NSLog(@"An error occurred while attempting to patch index page: %@, %@", exception.name, exception.reason);
+        // Create a new exception with more detail and re-throw it
+        NSException *detailedException = [NSException exceptionWithName:@"DetailedWriteErrorException" reason:@"An error occurred while attempting to patch index page" userInfo:@{@"originalException": exception}];
+        
+        @throw detailedException;
+    }
+  
 }
 
 - (void)onAppTerminate {
